@@ -1,35 +1,48 @@
+import React from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
 import './App.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Store from './components/Store';
+import axios from 'axios';
+import Product from "./components/Product";
+
 
 
 function App() {
- const [storeItems, setStoreItem] = useState([
-  {
-   title: "Computer",
-   price: 20,
+ const [storeItems, setStoreItem] = useState([]);
+ const [loading, setLoading] = useState(true)
 
-  },
-  {
-    title: "CD Games ",
-    price: 20,
-    
-   },
-   {
-    title: "KeyBoard",
-    price: 50,
-    
-   }
-])
+useEffect (()=> {
+  axios.get('https://fakestoreapi.com/products')
+  .then(({data}) => {
+    setLoading(false)
+    setStoreItem(data);
+  });
+}, []);
 
+const StoreView = (props) => {
+  return ( <>
+        <Store loading={loading} storeItems={storeItems} onItemAdd={(itemData)=> {
+          setStoreItem([...storeItems, itemData]);
+         }} />
+         </>
+      )
+}
+console.log(StoreView())
   return (
-    <>
-    <Store items={storeItems} onItemAdd={(itemData)=> {
-      console.log('Data', itemData)
-    }} />
-    </>
+    <BrowserRouter>
+      <Routes>
+       <Route path="/" element={<StoreView />} />
+       <Route path="/product/:id" element={<Product {...<StoreView/>}/>}/>
+      </Routes>
+    </BrowserRouter>
    
   );
 }
+
 
 export default App;

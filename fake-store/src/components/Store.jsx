@@ -1,45 +1,73 @@
-import { Box, Button, Heading, Stack, Input,  Flex, Spacer, Tag} from '@chakra-ui/react'
+import { Box, Button, Heading, Input,  Flex, Spacer, Tag, SimpleGrid, Image, GridItem, Spinner, Center} from '@chakra-ui/react'
 import React from 'react';
+import { useEffect } from 'react';
+import { useState } from 'react';
 import { useRef } from 'react';
+import { Link } from 'react-router-dom';
+import Header from './Header';
 
 
-const StoreItem = ({title, price}) => {
+const StoreItem = ({title, price, image}) => {
     return (
         <>
         <Box p={4} borderRadius="lg" borderWidth={"1px"}>
-            <Flex alignItems={"center"}>
-              <Heading size={"md"}>{title}</Heading>
+          <Image src={image} w={24}/>
+            <Flex alignItems={"center"} >
+              <Heading mt={4} noOfLines={2} size={"sm"} fontWeight="normal">
+                {title}
+              </Heading>
                <Spacer />
-               <Tag>{price}</Tag>
-      
+               <Tag margin={4}>${price}</Tag>
             </Flex>
         </Box>
         </>
     )
 }
 
-const Store = ({items, onItemAdd}) => {
+const Store = ({storeItems, onItemAdd, loading, StoreView}) => {
     const itemNameRef = useRef();
     const itemPriceRef = useRef();
+    const [filteredItems, setFilteredItems] = useState(storeItems)
+
+    useEffect(() => {
+      setFilteredItems(storeItems)
+    },[storeItems]);
+
+   
   return (
   <>
-  <h1>Store</h1>
-   <Box p={4}>
-    <Stack>
-    {items.map((item) => {
+   <Box >
+    <Header title={"Fake Store"}/>
+    {
+    loading ? ( <Center mt={6}><Spinner/></Center> ) : 
+    <Box p={2}>
+      <Input placeholder='Search' mt={4} onChange={e => {
+          let filter = storeItems.filter((item)=> {
+            return item.title.toLowerCase().includes(e.target.value.toLocaleLowerCase())
+          });
+          setFilteredItems(filter)
+      }}/>
+    <SimpleGrid columns={4} spacing="4" mt={4} p={2}>
+    {filteredItems.map((item) => {
       return (
-            <StoreItem title={item.title} price={item.price}/>
-            );
+           <GridItem>
+            <Link to={`/product/${item.id}`}>
+             <StoreItem {...item}  />
+             </Link>
+           </GridItem>
+            );  
     })}
-    </Stack>
+    </SimpleGrid>
     <Input ref={itemNameRef} mt={10} placeholder="Item name"/>
     <Input ref={itemPriceRef} mt={2} placeholder="Price" type={'number'}/>
-    <Button onClick={()=>{
+    <Button onClick= {()=>{
       onItemAdd({
         title: itemNameRef.current.value,
         price: itemPriceRef.current.value
       })
     }} mt={2}>Add Item</Button>
+    </Box>
+    }
    </Box>
   </>
   );
